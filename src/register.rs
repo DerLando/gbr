@@ -60,10 +60,18 @@ impl Registers {
 }
 
 impl Registers {
-    fn flags(&self) -> u8 {
-        self.af.low()
+    pub(crate) fn flags(&self) -> Flags {
+        Flags(self.af.low())
     }
+    pub(crate) fn flags_mut(&mut self) -> FlagsMut<'_> {
+        FlagsMut(self.af.low_mut())
+    }
+}
 
+#[repr(transparent)]
+pub(crate) struct Flags(u8);
+
+impl Flags {
     const FLAGS_MASKS: [u8; 8] = [
         0,
         0,
@@ -77,19 +85,100 @@ impl Registers {
 
     fn flags_bit_at(&self, index: usize) -> u8 {
         assert!(index < 8);
-        let flags = self.flags();
-        flags & Self::FLAGS_MASKS[index] >> index
+        let flags = self.0;
+        (flags & Self::FLAGS_MASKS[index]) >> index
     }
-    pub(crate) fn zero_flag(&self) -> bool {
+    pub(crate) fn zero(&self) -> bool {
         self.flags_bit_at(7) == 1
     }
-    pub(crate) fn addsub_flag(&self) -> bool {
+    pub(crate) fn addsub(&self) -> bool {
         self.flags_bit_at(6) == 1
     }
-    pub(crate) fn half_carry_flag(&self) -> bool {
+    pub(crate) fn half_carry(&self) -> bool {
         self.flags_bit_at(5) == 1
     }
-    pub(crate) fn carry_flag(&self) -> bool {
+    pub(crate) fn carry(&self) -> bool {
         self.flags_bit_at(4) == 1
+    }
+}
+
+pub(crate) struct FlagsMut<'a>(&'a mut u8);
+
+impl<'a> FlagsMut<'a> {
+    const ON_MASKS: [u8; 8] = [
+        0,
+        0,
+        0,
+        0,
+        0b0001_0000,
+        0b0010_0000,
+        0b0100_0000,
+        0b1000_0000,
+    ];
+
+    const OFF_MASKS: [u8; 8] = [
+        0,
+        0,
+        0,
+        0,
+        0b1110_1111,
+        0b1101_1111,
+        0b1011_1111,
+        0b0111_1111,
+    ];
+
+    fn set_bit_on_at(&mut self, index: usize) {
+        *self.0 |= Self::ON_MASKS[index]
+    }
+
+    fn set_bit_off_at(&mut self, index: usize) {
+        *self.0 &= Self::OFF_MASKS[index]
+    }
+
+    pub fn zero_on(&mut self) {
+        self.set_bit_on_at(7)
+    }
+    pub fn zero_off(&mut self) {
+        self.set_bit_off_at(7)
+    }
+    pub fn addsub_on(&mut self) {
+        self.set_bit_on_at(7)
+    }
+    pub fn addsub_off(&mut self) {
+        self.set_bit_off_at(7)
+    }
+    pub fn half_carry_on(&mut self) {
+        self.set_bit_on_at(7)
+    }
+    pub fn half_carry_off(&mut self) {
+        self.set_bit_off_at(7)
+    }
+    pub fn carry_on(&mut self) {
+        self.set_bit_on_at(7)
+    }
+    pub fn carry_off(&mut self) {
+        self.set_bit_off_at(7)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::register::Flags;
+
+    use super::FlagsMut;
+
+    #[test]
+    fn can_manipulate_zero_flag() {
+        let mut value = 0b0011_1111;
+        let mut flags = FlagsMut(&mut value);
+
+        flags.zero_on();
+        assert_eq!(0b1011_1111, value);
+        assert!(Flags(value).zero());
+
+        let mut flags = FlagsMut(&mut value);
+        flags.zero_off();
+        assert_eq!(0b0011_1111, value);
+        assert!(!Flags(value).zero());
     }
 }
