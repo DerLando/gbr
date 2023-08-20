@@ -57,6 +57,45 @@ impl Registers {
     pub(crate) fn l(&self) -> u8 {
         self.hl.low()
     }
+    pub(crate) fn bc(&self) -> u16 {
+        self.bc.wide()
+    }
+    pub(crate) fn de(&self) -> u16 {
+        self.de.wide()
+    }
+    pub(crate) fn hl(&self) -> u16 {
+        self.hl.wide()
+    }
+    pub(crate) fn a_mut(&mut self) -> &mut u8 {
+        self.af.high_mut()
+    }
+    pub(crate) fn b_mut(&mut self) -> &mut u8 {
+        self.bc.high_mut()
+    }
+    pub(crate) fn c_mut(&mut self) -> &mut u8 {
+        self.bc.low_mut()
+    }
+    pub(crate) fn d_mut(&mut self) -> &mut u8 {
+        self.de.high_mut()
+    }
+    pub(crate) fn e_mut(&mut self) -> &mut u8 {
+        self.de.low_mut()
+    }
+    pub(crate) fn h_mut(&mut self) -> &mut u8 {
+        self.hl.high_mut()
+    }
+    pub(crate) fn l_mut(&mut self) -> &mut u8 {
+        self.hl.low_mut()
+    }
+    pub(crate) fn bc_mut(&mut self) -> &mut u16 {
+        self.bc.wide_mut()
+    }
+    pub(crate) fn de_mut(&mut self) -> &mut u16 {
+        self.de.wide_mut()
+    }
+    pub(crate) fn hl_mut(&mut self) -> &mut u16 {
+        self.hl.wide_mut()
+    }
 }
 
 impl Registers {
